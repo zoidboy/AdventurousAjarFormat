@@ -1,50 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proxy & Games</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>Welcome to Proxy & Games</h1>
-    </header>
+        // proxy-server.js
 
-    <nav>
-        <ul>
-            <li><a href="#games">Games</a></li>
-            <li><a href="#proxy">Proxy</a></li>
-        </ul>
-    </nav>
+        const express = require('express');
+        const { createProxyMiddleware } = require('http-proxy-middleware');
 
-    <main>
-        <section id="games">
-            <h2>Games</h2>
-            <div class="game">
-                <h3>Game 1</h3>
-                <iframe src="path_to_your_game_1.html" frameborder="0"></iframe>
-            </div>
-            <div class="game">
-                <h3>Game 2</h3>
-                <iframe src="path_to_your_game_2.html" frameborder="0"></iframe>
-            </div>
-        </section>
+        const app = express();
+        const PORT = process.env.PORT || 3000;
 
-        <section id="proxy">
-            <h2>Proxy</h2>
-            <form id="proxy-form">
-                <input type="text" id="url" placeholder="Enter URL" required>
-                <button type="submit">Go</button>
-            </form>
-            <iframe id="proxy-iframe" src="" frameborder="0"></iframe>
-        </section>
-    </main>
+        // Proxy middleware options
+        const proxyOptions = {
+            target: '', // target host
+            changeOrigin: true,
+            onProxyReq: (proxyReq, req, res) => {
+                const targetUrl = req.query.url;
+                if (targetUrl) {
+                    proxyReq.path = targetUrl;
+                }
+            },
+            pathRewrite: {
+                '^/proxy': '/', // rewrite path
+            },
+        };
 
-    <footer>
-        <p>&copy; 2024 Proxy & Games</p>
-    </footer>
+        // Proxy endpoint
+        app.use('/proxy', createProxyMiddleware(proxyOptions));
 
-    <script src="script.js"></script>
-</body>
-</html>
+        // Serve static files
+        app.use(express.static('public'));
+
+        app.listen(PORT, () => {
+            console.log(`Proxy server running on port ${PORT}`);
+        });
